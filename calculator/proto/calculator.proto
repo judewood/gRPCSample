@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package calculator;
+
+option go_package = "github.com/judewood/gRPCSample/calculator/proto";
+
+message SumRequest {
+    int64 op1 = 1;
+    int64 op2 = 2;
+}
+
+message SumResponse {
+    int64 result = 1;
+}
+
+service SumService {
+    rpc Sum (SumRequest) returns (SumResponse);
+}
