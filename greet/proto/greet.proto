@@ -3,7 +3,7 @@ syntax = "proto3";
 package greet;
 
 // Used as import to go files
-option go_package = "github.com/Clement-Jean/grpc-go-course/greet/proto";
+option go_package = "github.com/judewood/gRPCSample/greet/proto";
 
 message GreetRequest {
     string first_name = 1;

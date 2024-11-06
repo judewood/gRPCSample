@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/Clement-Jean/grpc-go-course/greet/proto"
+	pb "github.com/judewood/gRPCSample/greet/proto"
 )
 
 var endpoint string = "localhost:6666" //localhost not 0.0.0.0 because this is the client

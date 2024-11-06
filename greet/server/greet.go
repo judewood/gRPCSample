@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/Clement-Jean/grpc-go-course/greet/proto"
+	pb "github.com/judewood/gRPCSample/greet/proto"
 )
 
 // Greet is the server side implementation of the Greet function
