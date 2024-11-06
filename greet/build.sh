@@ -5,7 +5,7 @@ PROTO_DIR="proto"
 BIN_DIR="bin"
 SERVER_DIR="server"
 CLIENT_DIR="client"
-MODULE="github.com/Clement-Jean/grpc-go-course"
+MODULE="github.com/judewood/gRPCSample"
 PROTO_FILENAME="greet.proto"
 
 echo "building ${PROJECT_DIR}"

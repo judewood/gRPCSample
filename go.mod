@@ -1,4 +1,4 @@
-module github.com/Clement-Jean/grpc-go-course
+module github.com/judewood/gRPCSample
 
 go 1.22.1
 
