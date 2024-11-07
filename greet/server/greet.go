@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	pb "github.com/judewood/gRPCSample/greet/proto"
+	"google.golang.org/grpc"
 )
 
 // Greet is the server side implementation of the Greet function
@@ -16,4 +18,16 @@ func (s *Server) Greet(ctx context.Context, request *pb.GreetRequest) (*pb.Greet
 	}
 	log.Printf("Responding with %s.\n", resp.Result)
 	return &resp, nil
+}
+
+func (s *Server) GreetMany(in *pb.GreetRequest, stream grpc.ServerStreamingServer[pb.GreetResponse]) error {
+	log.Printf("Received request %v.\n", in)
+
+	for i := 0; i < 5; i++ {
+		resp := pb.GreetResponse{
+			Result: fmt.Sprintf("Hi there %s. Times %d", in.FirstName, i+1),
+		}
+		stream.Send(&resp)
+	}
+	return nil
 }
