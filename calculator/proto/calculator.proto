@@ -13,6 +13,15 @@ message SumResponse {
     int64 result = 1;
 }
 
-service SumService {
+message CountDownRequest{
+    int64 value = 1;
+}
+
+message CountDownResponse {
+    int64 count = 1;
+}
+
+service CalculatorService {
     rpc Sum (SumRequest) returns (SumResponse);
+    rpc CountDown(CountDownRequest) returns(stream CountDownResponse);
 }

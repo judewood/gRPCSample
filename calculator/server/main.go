@@ -11,7 +11,7 @@ import (
 var endpoint = "0.0.0.0:7777"
 
 type CalcServer struct {
-	pb.SumServiceServer
+	pb.CalculatorServiceServer
 }
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 
 	s := grpc.NewServer()
 
-	pb.RegisterSumServiceServer(s, &CalcServer{})
+	pb.RegisterCalculatorServiceServer(s, &CalcServer{})
 
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to create sum server.Error %v", err)

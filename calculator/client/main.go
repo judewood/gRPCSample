@@ -18,7 +18,9 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := pb.NewSumServiceClient(conn)
+	c := pb.NewCalculatorServiceClient(conn)
 
 	Sum(c, 1, 2)
+
+	CountDown(c, 6)
 }
