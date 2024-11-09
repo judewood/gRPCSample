@@ -19,103 +19,145 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SumService_Sum_FullMethodName = "/calculator.SumService/Sum"
+	CalculatorService_Sum_FullMethodName       = "/calculator.CalculatorService/Sum"
+	CalculatorService_CountDown_FullMethodName = "/calculator.CalculatorService/CountDown"
 )
 
-// SumServiceClient is the client API for SumService service.
+// CalculatorServiceClient is the client API for CalculatorService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SumServiceClient interface {
+type CalculatorServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error)
 }
 
-type sumServiceClient struct {
+type calculatorServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSumServiceClient(cc grpc.ClientConnInterface) SumServiceClient {
-	return &sumServiceClient{cc}
+func NewCalculatorServiceClient(cc grpc.ClientConnInterface) CalculatorServiceClient {
+	return &calculatorServiceClient{cc}
 }
 
-func (c *sumServiceClient) Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error) {
+func (c *calculatorServiceClient) Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SumResponse)
-	err := c.cc.Invoke(ctx, SumService_Sum_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, CalculatorService_Sum_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// SumServiceServer is the server API for SumService service.
-// All implementations must embed UnimplementedSumServiceServer
-// for forward compatibility.
-type SumServiceServer interface {
-	Sum(context.Context, *SumRequest) (*SumResponse, error)
-	mustEmbedUnimplementedSumServiceServer()
+func (c *calculatorServiceClient) CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &CalculatorService_ServiceDesc.Streams[0], CalculatorService_CountDown_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CountDownRequest, CountDownResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
 
-// UnimplementedSumServiceServer must be embedded to have
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_CountDownClient = grpc.ServerStreamingClient[CountDownResponse]
+
+// CalculatorServiceServer is the server API for CalculatorService service.
+// All implementations must embed UnimplementedCalculatorServiceServer
+// for forward compatibility.
+type CalculatorServiceServer interface {
+	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error
+	mustEmbedUnimplementedCalculatorServiceServer()
+}
+
+// UnimplementedCalculatorServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedSumServiceServer struct{}
+type UnimplementedCalculatorServiceServer struct{}
 
-func (UnimplementedSumServiceServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
+func (UnimplementedCalculatorServiceServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
 }
-func (UnimplementedSumServiceServer) mustEmbedUnimplementedSumServiceServer() {}
-func (UnimplementedSumServiceServer) testEmbeddedByValue()                    {}
+func (UnimplementedCalculatorServiceServer) CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method CountDown not implemented")
+}
+func (UnimplementedCalculatorServiceServer) mustEmbedUnimplementedCalculatorServiceServer() {}
+func (UnimplementedCalculatorServiceServer) testEmbeddedByValue()                           {}
 
-// UnsafeSumServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SumServiceServer will
+// UnsafeCalculatorServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CalculatorServiceServer will
 // result in compilation errors.
-type UnsafeSumServiceServer interface {
-	mustEmbedUnimplementedSumServiceServer()
+type UnsafeCalculatorServiceServer interface {
+	mustEmbedUnimplementedCalculatorServiceServer()
 }
 
-func RegisterSumServiceServer(s grpc.ServiceRegistrar, srv SumServiceServer) {
-	// If the following call pancis, it indicates UnimplementedSumServiceServer was
+func RegisterCalculatorServiceServer(s grpc.ServiceRegistrar, srv CalculatorServiceServer) {
+	// If the following call pancis, it indicates UnimplementedCalculatorServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&SumService_ServiceDesc, srv)
+	s.RegisterService(&CalculatorService_ServiceDesc, srv)
 }
 
-func _SumService_Sum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CalculatorService_Sum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SumRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SumServiceServer).Sum(ctx, in)
+		return srv.(CalculatorServiceServer).Sum(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SumService_Sum_FullMethodName,
+		FullMethod: CalculatorService_Sum_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SumServiceServer).Sum(ctx, req.(*SumRequest))
+		return srv.(CalculatorServiceServer).Sum(ctx, req.(*SumRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// SumService_ServiceDesc is the grpc.ServiceDesc for SumService service.
+func _CalculatorService_CountDown_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CountDownRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CalculatorServiceServer).CountDown(m, &grpc.GenericServerStream[CountDownRequest, CountDownResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_CountDownServer = grpc.ServerStreamingServer[CountDownResponse]
+
+// CalculatorService_ServiceDesc is the grpc.ServiceDesc for CalculatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var SumService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "calculator.SumService",
-	HandlerType: (*SumServiceServer)(nil),
+var CalculatorService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "calculator.CalculatorService",
+	HandlerType: (*CalculatorServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Sum",
-			Handler:    _SumService_Sum_Handler,
+			Handler:    _CalculatorService_Sum_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CountDown",
+			Handler:       _CalculatorService_CountDown_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "calculator.proto",
 }
