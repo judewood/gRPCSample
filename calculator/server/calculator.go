@@ -9,6 +9,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Sum receives a single (unary) request containing two int64s to be added together
+// It returns a single response containing the result
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
 func (s *CalcServer) Sum(ctx context.Context, in *pb.SumRequest) (*pb.SumResponse, error) {
 
 	result := in.Op1 + in.Op2
@@ -20,6 +23,9 @@ func (s *CalcServer) Sum(ctx context.Context, in *pb.SumRequest) (*pb.SumRespons
 	return &resp, nil
 }
 
+//SumMany receives a stream of requests each containing a single int64 and creates a cumulative sum of these
+// When the sender closes the stream (EOF) this method returns the sum
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
 func (s *CalcServer) SumMany(streamIn grpc.ClientStreamingServer[pb.SumManyRequest, pb.SumManyResponse]) error {
 	var sum int64 = 0
 	for {
@@ -38,7 +44,9 @@ func (s *CalcServer) SumMany(streamIn grpc.ClientStreamingServer[pb.SumManyReque
 	}
 }
 
-// CountDown returns all the values from counting down form initial value to zero
+// CountDown receives a single int64 and returns all the values from counting down 
+// from supplied value to zero as a stream
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
 func (s *CalcServer) CountDown(in *pb.CountDownRequest, stream grpc.ServerStreamingServer[pb.CountDownResponse]) error {
 	log.Printf("Received request %v.\n", in)
 
@@ -52,6 +60,8 @@ func (s *CalcServer) CountDown(in *pb.CountDownRequest, stream grpc.ServerStream
 	return nil
 }
 
+// countDown returns a slice containing all the values from n-1 
+//counting down to zero
 func countDown(n int64) []int64 {
 	values := make([]int64, n)
 	index := 0
