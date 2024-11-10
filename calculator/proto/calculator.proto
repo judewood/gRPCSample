@@ -29,8 +29,17 @@ message CountDownResponse {
     int64 count = 1;
 }
 
+message CumulativeSumRequest {
+    int64 input = 1;
+}
+
+message CumulativeSumResponse {
+    int64 result = 1;
+}
+
 service CalculatorService {
     rpc Sum (SumRequest) returns (SumResponse);
     rpc SumMany (stream SumManyRequest) returns (SumManyResponse);
     rpc CountDown(CountDownRequest) returns(stream CountDownResponse);
+    rpc CumulativeSum(stream CumulativeSumRequest) returns (stream CumulativeSumResponse);
 }

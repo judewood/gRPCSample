@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CalculatorService_Sum_FullMethodName       = "/calculator.CalculatorService/Sum"
-	CalculatorService_SumMany_FullMethodName   = "/calculator.CalculatorService/SumMany"
-	CalculatorService_CountDown_FullMethodName = "/calculator.CalculatorService/CountDown"
+	CalculatorService_Sum_FullMethodName           = "/calculator.CalculatorService/Sum"
+	CalculatorService_SumMany_FullMethodName       = "/calculator.CalculatorService/SumMany"
+	CalculatorService_CountDown_FullMethodName     = "/calculator.CalculatorService/CountDown"
+	CalculatorService_CumulativeSum_FullMethodName = "/calculator.CalculatorService/CumulativeSum"
 )
 
 // CalculatorServiceClient is the client API for CalculatorService service.
@@ -31,6 +32,7 @@ type CalculatorServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
 	SumMany(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SumManyRequest, SumManyResponse], error)
 	CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error)
+	CumulativeSum(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CumulativeSumRequest, CumulativeSumResponse], error)
 }
 
 type calculatorServiceClient struct {
@@ -83,6 +85,19 @@ func (c *calculatorServiceClient) CountDown(ctx context.Context, in *CountDownRe
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_CountDownClient = grpc.ServerStreamingClient[CountDownResponse]
 
+func (c *calculatorServiceClient) CumulativeSum(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CumulativeSumRequest, CumulativeSumResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &CalculatorService_ServiceDesc.Streams[2], CalculatorService_CumulativeSum_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CumulativeSumRequest, CumulativeSumResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_CumulativeSumClient = grpc.BidiStreamingClient[CumulativeSumRequest, CumulativeSumResponse]
+
 // CalculatorServiceServer is the server API for CalculatorService service.
 // All implementations must embed UnimplementedCalculatorServiceServer
 // for forward compatibility.
@@ -90,6 +105,7 @@ type CalculatorServiceServer interface {
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
 	SumMany(grpc.ClientStreamingServer[SumManyRequest, SumManyResponse]) error
 	CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error
+	CumulativeSum(grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]) error
 	mustEmbedUnimplementedCalculatorServiceServer()
 }
 
@@ -108,6 +124,9 @@ func (UnimplementedCalculatorServiceServer) SumMany(grpc.ClientStreamingServer[S
 }
 func (UnimplementedCalculatorServiceServer) CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method CountDown not implemented")
+}
+func (UnimplementedCalculatorServiceServer) CumulativeSum(grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method CumulativeSum not implemented")
 }
 func (UnimplementedCalculatorServiceServer) mustEmbedUnimplementedCalculatorServiceServer() {}
 func (UnimplementedCalculatorServiceServer) testEmbeddedByValue()                           {}
@@ -166,6 +185,13 @@ func _CalculatorService_CountDown_Handler(srv interface{}, stream grpc.ServerStr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_CountDownServer = grpc.ServerStreamingServer[CountDownResponse]
 
+func _CalculatorService_CumulativeSum_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CalculatorServiceServer).CumulativeSum(&grpc.GenericServerStream[CumulativeSumRequest, CumulativeSumResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_CumulativeSumServer = grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]
+
 // CalculatorService_ServiceDesc is the grpc.ServiceDesc for CalculatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -188,6 +214,12 @@ var CalculatorService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "CountDown",
 			Handler:       _CalculatorService_CountDown_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "CumulativeSum",
+			Handler:       _CalculatorService_CumulativeSum_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "calculator.proto",
