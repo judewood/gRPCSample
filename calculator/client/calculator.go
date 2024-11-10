@@ -19,6 +19,29 @@ func Sum(c pb.CalculatorServiceClient, op1, op2 int64) {
 	log.Printf("Result of %d + %d is %d", op1, op2, resp.Result)
 }
 
+func SumMany(c pb.CalculatorServiceClient, in []int64) {
+	log.Printf("summing: %#v", in)
+	reqs := make([]pb.SumManyRequest, len(in))
+	for i := range in {
+		reqs[i] = pb.SumManyRequest{
+			Op1: in[i],
+		}
+	}
+	stream, err := c.SumMany(context.Background())
+	if err != nil {
+		log.Fatalf("failed to request SumMany with inputs %v", in)
+	}
+	for i := range reqs {
+		log.Printf("Sending %d for summing", reqs[i].Op1)
+		stream.Send(&reqs[i])
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("failed to get result from server. Error: %v", err)
+	}
+	log.Printf("Result of summing %v is %d", in, res.Op1)
+}
 
 func CountDown(c pb.CalculatorServiceClient, val int64) {
 	log.Printf("requesting Countdown from %d", val)

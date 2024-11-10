@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CalculatorService_Sum_FullMethodName       = "/calculator.CalculatorService/Sum"
+	CalculatorService_SumMany_FullMethodName   = "/calculator.CalculatorService/SumMany"
 	CalculatorService_CountDown_FullMethodName = "/calculator.CalculatorService/CountDown"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalculatorServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	SumMany(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SumManyRequest, SumManyResponse], error)
 	CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error)
 }
 
@@ -49,9 +51,22 @@ func (c *calculatorServiceClient) Sum(ctx context.Context, in *SumRequest, opts 
 	return out, nil
 }
 
+func (c *calculatorServiceClient) SumMany(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SumManyRequest, SumManyResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &CalculatorService_ServiceDesc.Streams[0], CalculatorService_SumMany_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[SumManyRequest, SumManyResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_SumManyClient = grpc.ClientStreamingClient[SumManyRequest, SumManyResponse]
+
 func (c *calculatorServiceClient) CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &CalculatorService_ServiceDesc.Streams[0], CalculatorService_CountDown_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &CalculatorService_ServiceDesc.Streams[1], CalculatorService_CountDown_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +88,7 @@ type CalculatorService_CountDownClient = grpc.ServerStreamingClient[CountDownRes
 // for forward compatibility.
 type CalculatorServiceServer interface {
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	SumMany(grpc.ClientStreamingServer[SumManyRequest, SumManyResponse]) error
 	CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error
 	mustEmbedUnimplementedCalculatorServiceServer()
 }
@@ -86,6 +102,9 @@ type UnimplementedCalculatorServiceServer struct{}
 
 func (UnimplementedCalculatorServiceServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
+}
+func (UnimplementedCalculatorServiceServer) SumMany(grpc.ClientStreamingServer[SumManyRequest, SumManyResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method SumMany not implemented")
 }
 func (UnimplementedCalculatorServiceServer) CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method CountDown not implemented")
@@ -129,6 +148,13 @@ func _CalculatorService_Sum_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CalculatorService_SumMany_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(CalculatorServiceServer).SumMany(&grpc.GenericServerStream[SumManyRequest, SumManyResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CalculatorService_SumManyServer = grpc.ClientStreamingServer[SumManyRequest, SumManyResponse]
+
 func _CalculatorService_CountDown_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(CountDownRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -153,6 +179,11 @@ var CalculatorService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SumMany",
+			Handler:       _CalculatorService_SumMany_Handler,
+			ClientStreams: true,
+		},
 		{
 			StreamName:    "CountDown",
 			Handler:       _CalculatorService_CountDown_Handler,

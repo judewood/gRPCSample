@@ -22,5 +22,7 @@ func main() {
 
 	Sum(c, 1, 2)
 
+	ops := []int64{1,2,3}
+	SumMany(c,ops)
 	CountDown(c, 6)
 }
