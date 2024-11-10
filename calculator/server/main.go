@@ -15,16 +15,21 @@ type CalcServer struct {
 }
 
 func main() {
-	listener, err := net.Listen("tcp", endpoint)
+	protocol := "tcp"
+	// tell the runtime what port to listen on and the transport protocol to use 
+	listener, err := net.Listen(protocol, endpoint)
 	if err != nil {
 		log.Fatalf("failed to create calculator listener")
 	}
-	log.Printf("Listening on %s", endpoint)
+	log.Printf("Listening on %s with protocol %s", endpoint, protocol)
 
 	s := grpc.NewServer()
 
+	// register s as  s as being the concrete implementation of 
+	//CalculatorServiceServer defined in the generated gprc code 
 	pb.RegisterCalculatorServiceServer(s, &CalcServer{})
 
+	//start our server and listen 
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to create sum server.Error %v", err)
 	}

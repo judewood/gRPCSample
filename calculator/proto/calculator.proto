@@ -9,8 +9,16 @@ message SumRequest {
     int64 op2 = 2;
 }
 
+message SumManyRequest {
+    int64 op1 = 1;
+}
+
 message SumResponse {
     int64 result = 1;
+}
+
+message SumManyResponse {
+    int64 op1 = 1;
 }
 
 message CountDownRequest{
@@ -23,5 +31,6 @@ message CountDownResponse {
 
 service CalculatorService {
     rpc Sum (SumRequest) returns (SumResponse);
+    rpc SumMany (stream SumManyRequest) returns (SumManyResponse);
     rpc CountDown(CountDownRequest) returns(stream CountDownResponse);
 }
