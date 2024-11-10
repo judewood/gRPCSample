@@ -8,7 +8,7 @@ import (
 	pb "github.com/judewood/gRPCSample/calculator/proto"
 )
 
-// Sum sends two int64s to the server as a single (unary) request and expects a unary  response from the server 
+// Sum sends two int64s to the server as a single (unary) request and expects a unary  response from the server
 // The response is logged out
 func Sum(c pb.CalculatorServiceClient, op1, op2 int64) {
 	log.Printf("requesting sum of %d and %d", op1, op2)
@@ -21,7 +21,8 @@ func Sum(c pb.CalculatorServiceClient, op1, op2 int64) {
 	}
 	log.Printf("Result of %d + %d is %d", op1, op2, resp.Result)
 }
-// SumMany sends a slice int64s to the server as streamed requests and expects a unary  response from the server 
+
+// SumMany sends a slice int64s to the server as streamed requests and expects a unary  response from the server
 // The response is logged out
 func SumMany(c pb.CalculatorServiceClient, in []int64) {
 	log.Printf("summing: %#v", in)
@@ -42,7 +43,7 @@ func SumMany(c pb.CalculatorServiceClient, in []int64) {
 		log.Printf("Sending %d for summing", reqs[i].Op1)
 		stream.Send(&reqs[i])
 	}
-    // close the stream and get the response
+	// close the stream and get the response
 	res, err := stream.CloseAndRecv()
 	if err != nil {
 		log.Fatalf("failed to get result from server. Error: %v", err)
@@ -51,7 +52,57 @@ func SumMany(c pb.CalculatorServiceClient, in []int64) {
 	log.Printf("Result of summing %v is %d", in, res.Op1)
 }
 
-// CountDown sends one int64 to the server as a single (unary) request and expects  stream of responses 
+func CumulativeSum(c pb.CalculatorServiceClient, in []int64) {
+	stream, err := c.CumulativeSum(context.Background())
+	if err != nil {
+		log.Fatalf("failed to get stream for CumulativeSum requests")
+	}
+
+	reqs := make([]pb.CumulativeSumRequest, len(in))
+	for i := range in {
+		reqs[i] = pb.CumulativeSumRequest{
+			Input: in[i],
+		}
+	}
+
+	// create a signally channel so we can block exit until all responses are received
+	waitCh := make(chan struct{})
+
+	//send the requests in this go routine
+	go func() {
+		for i := range reqs {
+			i := i
+			log.Printf("\n Sending CumulativeSumRequest req to server. %d ", reqs[i].Input)
+			err := stream.Send(&reqs[i])
+			if err != nil {
+				log.Fatalf("failed to get stream for CumulativeSum requests")
+			}
+		}
+		stream.CloseSend()
+	}()
+
+	// get the responses in this go routine
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				break // happens after stream.CloseSend() is called in other go routine
+			}
+			if err != nil {
+				log.Printf("failed to get resp for request : %v", err)
+				break
+			}
+			log.Printf("Response sum : %d", resp.Result)
+		}
+		close(waitCh) //signals that we are done getting responses
+	}()
+
+	v, ok :=  <-waitCh //will block until the signaling channel is closed. Closing channel pushed something in so v, ok could be received 
+    // this line is just to show that we receive an empty value and Ok is false when channel is closed
+	log.Printf("Channel closed with value = %v and OK = %v", v, ok )
+}
+
+// CountDown sends one int64 to the server as a single (unary) request and expects  stream of responses
 // in the form of a countdown to zero
 // The response is logged out
 func CountDown(c pb.CalculatorServiceClient, val int64) {

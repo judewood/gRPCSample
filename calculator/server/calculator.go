@@ -23,18 +23,18 @@ func (s *CalcServer) Sum(ctx context.Context, in *pb.SumRequest) (*pb.SumRespons
 	return &resp, nil
 }
 
-//SumMany receives a stream of requests each containing a single int64 and creates a cumulative sum of these
+// SumMany receives a stream of requests each containing a single int64 and creates a cumulative sum of these
 // When the sender closes the stream (EOF) this method returns the sum
 // The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
-func (s *CalcServer) SumMany(streamIn grpc.ClientStreamingServer[pb.SumManyRequest, pb.SumManyResponse]) error {
+func (s *CalcServer) SumMany(inStream grpc.ClientStreamingServer[pb.SumManyRequest, pb.SumManyResponse]) error {
 	var sum int64 = 0
 	for {
-		req, err := streamIn.Recv()
+		req, err := inStream.Recv()
 		if err == io.EOF {
 			resp := pb.SumManyResponse{
 				Op1: sum,
 			}
-			return streamIn.SendAndClose(&resp)
+			return inStream.SendAndClose(&resp)
 		}
 		if err != nil {
 			log.Fatalf("failed to read stream request for SumMany %v", err)
@@ -44,7 +44,35 @@ func (s *CalcServer) SumMany(streamIn grpc.ClientStreamingServer[pb.SumManyReque
 	}
 }
 
-// CountDown receives a single int64 and returns all the values from counting down 
+// Cumulative sum receives a stream of int64 to sum and responds to each request with the sum so far
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
+func (s *CalcServer) CumulativeSum(inStream grpc.BidiStreamingServer[pb.CumulativeSumRequest, pb.CumulativeSumResponse]) error {
+
+	log.Println("Cumulative sum called")
+	var sum int64 = 0
+	for {
+		req, err := inStream.Recv()
+		if err == io.EOF {
+			return nil // we don't call inStream.SendAndClose because the server is sending multiple responses
+		}
+		if err != nil {
+			log.Fatalf("failed to read stream request for CumulativeSum %v", err)
+		}
+		log.Printf("\nReceived CumulativeSum request to add %d to %d", req.Input, sum)
+		sum += req.Input
+		resp := pb.CumulativeSumResponse{
+			Result: sum,
+		}
+		// Note: the server doesn't know how many request the client is sending 
+		log.Printf("Sending sum so far %d", sum)
+		err = inStream.Send(&resp)
+		if err != nil {
+			log.Fatalf("failed to send CumulativeSumResponse to stream.Error: %v", err)
+		}
+	}
+}
+
+// CountDown receives a single int64 and returns all the values from counting down
 // from supplied value to zero as a stream
 // The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
 func (s *CalcServer) CountDown(in *pb.CountDownRequest, stream grpc.ServerStreamingServer[pb.CountDownResponse]) error {
@@ -60,8 +88,8 @@ func (s *CalcServer) CountDown(in *pb.CountDownRequest, stream grpc.ServerStream
 	return nil
 }
 
-// countDown returns a slice containing all the values from n-1 
-//counting down to zero
+// countDown returns a slice containing all the values from n-1
+// counting down to zero
 func countDown(n int64) []int64 {
 	values := make([]int64, n)
 	index := 0
