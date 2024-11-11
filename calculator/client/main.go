@@ -14,7 +14,7 @@ var endpoint = "localhost:7777"
 
 func main() {
 	opts := []grpc.DialOption{}
-	tls := true //true to use SSL  - must match server setting
+	tls := false //true to use SSL  - must match server setting
 	if tls {
 		certFile := "ssl/ca.crt"
 		creds, err := credentials.NewClientTLSFromFile(certFile, "") //empty string because we are using localhost
