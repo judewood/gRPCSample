@@ -6,6 +6,8 @@ import (
 	"log"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Sum sends two int64s to the server as a single (unary) request and expects a unary  response from the server
@@ -97,9 +99,9 @@ func CumulativeSum(c pb.CalculatorServiceClient, in []int64) {
 		close(waitCh) //signals that we are done getting responses
 	}()
 
-	v, ok :=  <-waitCh //will block until the signaling channel is closed. Closing channel pushed something in so v, ok could be received 
-    // this line is just to show that we receive an empty value and Ok is false when channel is closed
-	log.Printf("Channel closed with value = %v and OK = %v", v, ok )
+	v, ok := <-waitCh //will block until the signaling channel is closed. Closing channel pushed something in so v, ok could be received
+	// this line is just to show that we receive an empty value and Ok is false when channel is closed
+	log.Printf("Channel closed with value = %v and OK = %v", v, ok)
 }
 
 // CountDown sends one int64 to the server as a single (unary) request and expects  stream of responses
@@ -125,4 +127,27 @@ func CountDown(c pb.CalculatorServiceClient, val int64) {
 		//print out the latest countdown value received from the server
 		log.Printf("received:  %d", msg.Count)
 	}
+}
+
+// SquareRoot requests the square root of an integer and displays the response
+func SquareRoot(c pb.CalculatorServiceClient, input int64) {
+	log.Printf("requesting square root of %d", input)
+	// call the generated client function for this endpoint
+	resp, err := c.SquareRoot(context.Background(), &pb.SqrRootRequest{
+		Input: input,
+	})
+	if err != nil {
+		e, ok := status.FromError(err)
+		if ok {
+			log.Printf("Message from server %s\n", e.Message())
+			log.Printf("Status code from server %s\n", e.Code())
+			if e.Code() == codes.InvalidArgument {
+				log.Println("Try using a positive input")
+			}
+			return
+		} else {
+			log.Fatalf("failed to request Square root . Error: %v", err)
+		}
+	}
+	log.Printf("Square root of of %d is %s", input, resp.Result)
 }
