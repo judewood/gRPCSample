@@ -23,3 +23,11 @@ go.work.sum
 
 # env file
 .env
+
+# certificate related files
+ca.crt
+ca.key
+server.crt
+server.csr
+server.key
+server.pem
