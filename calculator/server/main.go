@@ -7,6 +7,7 @@ import (
 	pb "github.com/judewood/gRPCSample/calculator/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 )
 
 var endpoint = "0.0.0.0:7777"
@@ -25,7 +26,7 @@ func main() {
 	log.Printf("Listening on %s with protocol %s", endpoint, protocol)
 
 	opts := []grpc.ServerOption{}
-	tls := true //true to use SSL  - must match client setting
+	tls := false //true to use SSL  - must match client setting
 	if tls {
 		certFile := "ssl/server.crt"
 		keyFile := "ssl/server.pem"
@@ -40,6 +41,7 @@ func main() {
 	// register s as  s as being the concrete implementation of
 	//CalculatorServiceServer defined in the generated grpc code
 	pb.RegisterCalculatorServiceServer(s, &CalcServer{})
+	reflection.Register(s)
 
 	//start our server and listen
 	if err := s.Serve(listener); err != nil {
