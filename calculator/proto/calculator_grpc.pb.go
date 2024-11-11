@@ -23,6 +23,7 @@ const (
 	CalculatorService_SumMany_FullMethodName       = "/calculator.CalculatorService/SumMany"
 	CalculatorService_CountDown_FullMethodName     = "/calculator.CalculatorService/CountDown"
 	CalculatorService_CumulativeSum_FullMethodName = "/calculator.CalculatorService/CumulativeSum"
+	CalculatorService_SquareRoot_FullMethodName    = "/calculator.CalculatorService/SquareRoot"
 )
 
 // CalculatorServiceClient is the client API for CalculatorService service.
@@ -33,6 +34,7 @@ type CalculatorServiceClient interface {
 	SumMany(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SumManyRequest, SumManyResponse], error)
 	CountDown(ctx context.Context, in *CountDownRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CountDownResponse], error)
 	CumulativeSum(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[CumulativeSumRequest, CumulativeSumResponse], error)
+	SquareRoot(ctx context.Context, in *SqrRootRequest, opts ...grpc.CallOption) (*SqrRootResponse, error)
 }
 
 type calculatorServiceClient struct {
@@ -98,6 +100,16 @@ func (c *calculatorServiceClient) CumulativeSum(ctx context.Context, opts ...grp
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_CumulativeSumClient = grpc.BidiStreamingClient[CumulativeSumRequest, CumulativeSumResponse]
 
+func (c *calculatorServiceClient) SquareRoot(ctx context.Context, in *SqrRootRequest, opts ...grpc.CallOption) (*SqrRootResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SqrRootResponse)
+	err := c.cc.Invoke(ctx, CalculatorService_SquareRoot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalculatorServiceServer is the server API for CalculatorService service.
 // All implementations must embed UnimplementedCalculatorServiceServer
 // for forward compatibility.
@@ -106,6 +118,7 @@ type CalculatorServiceServer interface {
 	SumMany(grpc.ClientStreamingServer[SumManyRequest, SumManyResponse]) error
 	CountDown(*CountDownRequest, grpc.ServerStreamingServer[CountDownResponse]) error
 	CumulativeSum(grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]) error
+	SquareRoot(context.Context, *SqrRootRequest) (*SqrRootResponse, error)
 	mustEmbedUnimplementedCalculatorServiceServer()
 }
 
@@ -127,6 +140,9 @@ func (UnimplementedCalculatorServiceServer) CountDown(*CountDownRequest, grpc.Se
 }
 func (UnimplementedCalculatorServiceServer) CumulativeSum(grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method CumulativeSum not implemented")
+}
+func (UnimplementedCalculatorServiceServer) SquareRoot(context.Context, *SqrRootRequest) (*SqrRootResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SquareRoot not implemented")
 }
 func (UnimplementedCalculatorServiceServer) mustEmbedUnimplementedCalculatorServiceServer() {}
 func (UnimplementedCalculatorServiceServer) testEmbeddedByValue()                           {}
@@ -192,6 +208,24 @@ func _CalculatorService_CumulativeSum_Handler(srv interface{}, stream grpc.Serve
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_CumulativeSumServer = grpc.BidiStreamingServer[CumulativeSumRequest, CumulativeSumResponse]
 
+func _CalculatorService_SquareRoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SqrRootRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServiceServer).SquareRoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CalculatorService_SquareRoot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServiceServer).SquareRoot(ctx, req.(*SqrRootRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CalculatorService_ServiceDesc is the grpc.ServiceDesc for CalculatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +236,10 @@ var CalculatorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Sum",
 			Handler:    _CalculatorService_Sum_Handler,
+		},
+		{
+			MethodName: "SquareRoot",
+			Handler:    _CalculatorService_SquareRoot_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -2,11 +2,16 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
+	"math"
+	"strconv"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Sum receives a single (unary) request containing two int64s to be added together
@@ -63,7 +68,7 @@ func (s *CalcServer) CumulativeSum(inStream grpc.BidiStreamingServer[pb.Cumulati
 		resp := pb.CumulativeSumResponse{
 			Result: sum,
 		}
-		// Note: the server doesn't know how many request the client is sending 
+		// Note: the server doesn't know how many request the client is sending
 		log.Printf("Sending sum so far %d", sum)
 		err = inStream.Send(&resp)
 		if err != nil {
@@ -99,4 +104,19 @@ func countDown(n int64) []int64 {
 	}
 	log.Printf("values %#v", values)
 	return values
+}
+
+func (s *CalcServer) SquareRoot(ctx context.Context, in *pb.SqrRootRequest) (*pb.SqrRootResponse, error) {
+	log.Printf("Received request %v.\n", in)
+	if in.Input < 0 {
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Input must be positive number. Received %d", in.Input))
+	}
+	resultF := math.Sqrt(float64(in.Input))
+	result := strconv.FormatFloat(resultF, 'f', 10, 64)
+
+	resp := pb.SqrRootResponse{
+		Result: result,
+	}
+	log.Printf("Responding with %v.\n", resp.Result)
+	return &resp, nil
 }

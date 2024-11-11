@@ -37,9 +37,18 @@ message CumulativeSumResponse {
     int64 result = 1;
 }
 
+message SqrRootRequest {
+    int64 input = 1; //could by uint64 but we are demoing server error handling with it
+}
+
+message SqrRootResponse{
+    string result = 1;  //use a string to capture resolution of float64. Proto uses float32
+}
+
 service CalculatorService {
     rpc Sum (SumRequest) returns (SumResponse);
     rpc SumMany (stream SumManyRequest) returns (SumManyResponse);
     rpc CountDown(CountDownRequest) returns(stream CountDownResponse);
     rpc CumulativeSum(stream CumulativeSumRequest) returns (stream CumulativeSumResponse);
+    rpc SquareRoot(SqrRootRequest) returns (SqrRootResponse);
 }

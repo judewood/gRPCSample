@@ -29,4 +29,6 @@ func main() {
 	SumMany(c,ops)
 	CumulativeSum(c,ops)
 	CountDown(c, 6)
+	// Inputting a negative number  will return status InvalidArgument status code and the server supplied error desciprion
+	SquareRoot(c,-13)
 }
