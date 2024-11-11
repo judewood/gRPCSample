@@ -51,4 +51,5 @@ service CalculatorService {
     rpc CountDown(CountDownRequest) returns(stream CountDownResponse);
     rpc CumulativeSum(stream CumulativeSumRequest) returns (stream CumulativeSumResponse);
     rpc SquareRoot(SqrRootRequest) returns (SqrRootResponse);
+    rpc SumDelay (SumRequest) returns (SumResponse);
 }
