@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,6 +30,8 @@ func main() {
 	SumMany(c,ops)
 	CumulativeSum(c,ops)
 	CountDown(c, 6)
-	// Inputting a negative number  will return status InvalidArgument status code and the server supplied error desciprion
-	SquareRoot(c,-13)
+	// Inputting a negative number  will return status InvalidArgument status code and the server supplied error description
+	SquareRoot(c,13)
+	// the server will respond after 3 seconds Deadline cna be adjusted to show a timeout 
+	SumDelay(c, 10,20, 5 * time.Second)
 }

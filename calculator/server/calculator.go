@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"time"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
 	"google.golang.org/grpc"
@@ -25,6 +26,30 @@ func (s *CalcServer) Sum(ctx context.Context, in *pb.SumRequest) (*pb.SumRespons
 		Result: result,
 	}
 	log.Printf("Responding with %d.\n", resp.Result)
+	return &resp, nil
+}
+
+// SumDelay receives a single (unary) request containing two int64s to be added together
+// It returns a single response containing the result after a delay (to show sample of deadline)
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
+func (s *CalcServer) SumDelay(ctx context.Context, in *pb.SumRequest) (*pb.SumResponse, error) {
+	log.Printf("Received SumDelay request %v .\n", in)
+	delay := 3
+	for i := 0; i < delay; i++ {
+		if ctx.Err() == context.DeadlineExceeded {
+			reason := "Client cancelled the request"
+			log.Println(reason)
+			return nil, status.Error(codes.Canceled, reason)
+		}
+		log.Println("Sleeping for one second")
+		time.Sleep(time.Second)
+	}
+	result := in.Op1 + in.Op2
+	log.Println(result)
+	resp := pb.SumResponse{
+		Result: result,
+	}
+	log.Printf("SumDelay Responding with %d + %d  = %d.\n", in.Op1, in.Op2, resp.Result)
 	return &resp, nil
 }
 
@@ -106,6 +131,9 @@ func countDown(n int64) []int64 {
 	return values
 }
 
+// SquareRoot returns the square root in string format of the supplied int64
+// If a negative number is received then and error is returned
+// The signature of this method must match the equivalent in the generated CalculatorServiceServer interface so our server is implementing the handler method
 func (s *CalcServer) SquareRoot(ctx context.Context, in *pb.SqrRootRequest) (*pb.SqrRootResponse, error) {
 	log.Printf("Received request %v.\n", in)
 	if in.Input < 0 {

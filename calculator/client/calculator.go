@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"time"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
 	"google.golang.org/grpc/codes"
@@ -16,12 +17,39 @@ func Sum(c pb.CalculatorServiceClient, op1, op2 int64) {
 	log.Printf("requesting sum of %d and %d", op1, op2)
 	// call the generated client function for this endpoint
 	resp, err := c.Sum(context.Background(), &pb.SumRequest{
-		Op1: 1, Op2: 2,
+		Op1: op1, Op2: op2,
 	})
 	if err != nil {
 		log.Fatalf("failed to request Sum. Error: %v", err)
 	}
 	log.Printf("Result of %d + %d is %d", op1, op2, resp.Result)
+}
+
+// Sum sends two int64s to the server as a single (unary) request and expects a unary  response from the server
+// The response is logged out
+func SumDelay(c pb.CalculatorServiceClient, op1, op2 int64, deadline time.Duration) {
+	log.Printf("requesting sum of %d and %d with deadline %#v seconds", op1, op2, deadline/1000000000)
+	// call the generated client function for this endpoint
+	ctx, cancelFunc := context.WithTimeout(context.Background(), deadline)
+	defer cancelFunc()
+
+	resp, err := c.SumDelay(ctx, &pb.SumRequest{
+		Op1: op1, Op2: op2,
+	})
+	if err != nil {
+		e, ok := status.FromError(err)
+		if ok {
+			log.Printf("Message from server %s\n", e.Message())
+			log.Printf("Status code from server %s\n", e.Code())
+			if e.Code() == codes.InvalidArgument {
+				log.Println("Try giving the server more time")
+			}
+		} else {
+			log.Fatalf("failed to request Sum. Error: %v", err)
+		}
+	} else {
+		log.Printf("Result of %d + %d is %d", op1, op2, resp.Result)
+	}
 }
 
 // SumMany sends a slice int64s to the server as streamed requests and expects a unary  response from the server
