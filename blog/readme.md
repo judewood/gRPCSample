@@ -11,3 +11,7 @@ In terminal
 ### Stop container
 3. Open another terminal and navigate to blog folder
 4. run `docker-compose down`
+
+## .env file
+This is in the repo but ignored by git by using command `git update-index --assume-unchanged ./blog/.env` 
+We want to be able to see the format in github but not the values
