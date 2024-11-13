@@ -30,13 +30,12 @@ func main() {
 	collection = dbClient.Database("blogdb").Collection("blog")
 
 	log.Printf("connected to mongo with connection string %s", connStr)
-	
+
 	listener, err := net.Listen("tcp", endpointUrl)
 	if err != nil {
 		log.Fatalf("failed to get listener. Error: %v", err)
 	}
 	defer listener.Close()
-
 
 	log.Printf("Listening on: %s", endpointUrl)
 
