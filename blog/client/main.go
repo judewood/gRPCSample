@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
+	pb "github.com/judewood/gRPCSample/blog/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	pb "github.com/judewood/gRPCSample/blog/proto"
 )
 
 var endpointUrl = "localhost:4444"
@@ -32,5 +32,6 @@ func main() {
 	// create an concrete  client struct from the generated code
 	c := pb.NewBlogServiceClient(conn)
 
-    CreateBlog(c)
+	id := CreateBlog(c)
+	GetBlog(c, id)
 }
