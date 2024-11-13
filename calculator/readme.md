@@ -1,9 +1,9 @@
 ## purpose
 
-sums two numbers
+Calculator functions
 
 ## pre requisites
-You need to have
+You need to have:
 
 1. VSCode installed. [Download](https://code.visualstudio.com/download)
 
