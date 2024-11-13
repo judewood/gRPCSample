@@ -31,7 +31,25 @@ func GetBlog(c pb.BlogServiceClient, id string) {
 		Id: id,
 	})
 	if err != nil {
-		log.Fatalf("failed to request Sum. Error: %v", err)
+		log.Fatalf("failed to get blog. Error: %v", err)
 	}
 	log.Printf("Result  %v ", resp)
+}
+
+func UpdateBlog(c pb.BlogServiceClient, id string) error {
+
+	log.Println("requesting update blog")
+	// call the generated client function for this endpoint
+	_, err := c.UpdateBlog(context.Background(), &pb.Blog{
+		Id: id,
+		AuthorId: "666",
+		Title:    "Swallows and Amazons",
+		Content:  "One fine day...",
+	})
+	if err != nil {
+		log.Printf("err response %v", err)
+		return err
+	}
+	log.Printf("updated id %s OK", id)
+	return nil
 }
