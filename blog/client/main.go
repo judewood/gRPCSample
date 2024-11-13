@@ -34,4 +34,6 @@ func main() {
 
 	id := CreateBlog(c)
 	GetBlog(c, id)
+	UpdateBlog(c,id)
+	GetBlog(c, id)
 }
