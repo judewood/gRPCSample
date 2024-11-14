@@ -8,7 +8,6 @@ import (
 )
 
 func CreateBlog(c pb.BlogServiceClient) string {
-
 	log.Println("requesting create blog")
 	// call the generated client function for this endpoint
 	resp, err := c.CreateBlog(context.Background(), &pb.Blog{
@@ -17,7 +16,7 @@ func CreateBlog(c pb.BlogServiceClient) string {
 		Content:  "Always watch your back...",
 	})
 	if err != nil {
-		log.Fatalf("failed to request Sum. Error: %v", err)
+		log.Fatalf("failed to create blog. Error: %v", err)
 	}
 	log.Printf("Result id: %s ", resp.Id)
 	return resp.Id
@@ -52,4 +51,16 @@ func UpdateBlog(c pb.BlogServiceClient, id string) error {
 	}
 	log.Printf("updated id %s OK", id)
 	return nil
+}
+
+func DeleteBlog(c pb.BlogServiceClient, id string) {
+	log.Printf("requesting delete of blog Id: %s", id)
+	// call the generated client function for this endpoint
+	_, err := c.DeleteBlog(context.Background(), &pb.BlogId{
+		Id: id,
+	})
+	if err != nil {
+		log.Fatalf("failed to delete blog. Error: %v", err)
+	}
+	log.Printf("Deleted blog id : %s", id)
 }

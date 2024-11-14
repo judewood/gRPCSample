@@ -88,7 +88,7 @@ func (s *BlogServer) UpdateBlog(ctx context.Context, in *pb.Blog) (*emptypb.Empt
 	}
 
 	filter := bson.D{{Key: "_id", Value: mongoId}}
-	res, err := collection.UpdateOne(ctx, filter, bson.M{"$set":data})
+	res, err := collection.UpdateOne(ctx, filter, bson.M{"$set": data})
 	if err != nil {
 		log.Printf("failed to update blog. Error %v", err)
 		return nil, status.Errorf(
@@ -106,3 +106,26 @@ func (s *BlogServer) UpdateBlog(ctx context.Context, in *pb.Blog) (*emptypb.Empt
 	return &emptypb.Empty{}, nil
 
 }
+
+func (s *BlogServer) DeleteBlog(ctx context.Context, in *pb.BlogId) (*emptypb.Empty, error) {
+	log.Printf("DeleteBlog invoked with %s", in.Id)
+
+	mongoId, err := primitive.ObjectIDFromHex(in.Id)
+	if err != nil {
+		log.Printf("failed to convert id to mongo format. Error %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid Id supplied: %s", in.Id))
+	}
+	res, err := collection.DeleteOne(ctx, bson.M{"_id": mongoId})
+
+	if err != nil {
+		log.Printf("failed to delete item id: %s. Error %v", in.Id, err)
+		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to delete item.  Internal error: %v", err))
+	}
+
+	if res.DeletedCount == 0 {
+		return nil, status.Errorf(codes.NotFound, "Not found")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+//ListBlog(*emptypb.Empty, grpc.ServerStreamingServer[Blog]) error

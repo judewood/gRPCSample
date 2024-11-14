@@ -33,7 +33,10 @@ func main() {
 	c := pb.NewBlogServiceClient(conn)
 
 	id := CreateBlog(c)
+	id2 := CreateBlog(c)
 	GetBlog(c, id)
 	UpdateBlog(c,id)
-	GetBlog(c, id)
+	GetBlog(c, id2)
+	DeleteBlog(c,id)
+	//GetBlog(c, id)
 }
