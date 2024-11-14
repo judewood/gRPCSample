@@ -32,11 +32,12 @@ func main() {
 	// create an concrete  client struct from the generated code
 	c := pb.NewBlogServiceClient(conn)
 
-	id := CreateBlog(c)
-	id2 := CreateBlog(c)
-	GetBlog(c, id)
-	UpdateBlog(c,id)
-	GetBlog(c, id2)
-	DeleteBlog(c,id)
+	//id := CreateBlog(c)
+	CreateBlog(c)
 	//GetBlog(c, id)
+	//UpdateBlog(c,id)
+	//GetBlog(c, id2)
+	ListBlog(c)
+	//DeleteBlog(c,id)
+	//ListBlog(c)
 }
