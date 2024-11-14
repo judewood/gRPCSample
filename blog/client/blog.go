@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 
 	pb "github.com/judewood/gRPCSample/blog/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func CreateBlog(c pb.BlogServiceClient) string {
@@ -40,7 +42,7 @@ func UpdateBlog(c pb.BlogServiceClient, id string) error {
 	log.Println("requesting update blog")
 	// call the generated client function for this endpoint
 	_, err := c.UpdateBlog(context.Background(), &pb.Blog{
-		Id: id,
+		Id:       id,
 		AuthorId: "666",
 		Title:    "Swallows and Amazons",
 		Content:  "One fine day...",
@@ -63,4 +65,24 @@ func DeleteBlog(c pb.BlogServiceClient, id string) {
 		log.Fatalf("failed to delete blog. Error: %v", err)
 	}
 	log.Printf("Deleted blog id : %s", id)
+}
+
+func ListBlog(c pb.BlogServiceClient) {
+	log.Println("Listing the blogs")
+	stream, err := c.ListBlog(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		log.Fatalf("failed to get stream for ListBlog requests")
+	}
+	counter := 0
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF { //stream closed by server
+			break
+		}
+		if err != nil {
+			log.Fatalf("failed during stream. Error %v", err)
+		}
+		counter++
+		log.Printf("Blog: %d :  %v", counter, msg)
+	}
 }

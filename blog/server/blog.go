@@ -8,6 +8,7 @@ import (
 	pb "github.com/judewood/gRPCSample/blog/proto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -128,4 +129,38 @@ func (s *BlogServer) DeleteBlog(ctx context.Context, in *pb.BlogId) (*emptypb.Em
 	return &emptypb.Empty{}, nil
 }
 
-//ListBlog(*emptypb.Empty, grpc.ServerStreamingServer[Blog]) error
+func (s *BlogServer) ListBlog(in *emptypb.Empty, stream grpc.ServerStreamingServer[pb.Blog]) error {
+		log.Println("ListBlog invoked")
+		
+	ctx := context.Background()
+	cursor,err := collection.Find(ctx, primitive.D{{}})
+	if err != nil {
+		log.Printf("failed to get results from mongoDb: Error: %v", err)
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal error when get from mongoDb: %v", err),
+		)
+	}
+
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		data := BlogItem{}
+		err:= cursor.Decode(&data)
+		if err != nil {
+			return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal error when iterating ver mongoDb cursor: %v", err),
+		)
+		}
+		log.Printf("\nReturning next blog: %vn\", &data)
+		stream.Send(documentToBlog(&data))
+	}
+	if err = cursor.Err() ; err != nil {
+			return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal error when iterating ver mongoDb cursor: %v", err),
+		)
+	}
+	return nil
+}
