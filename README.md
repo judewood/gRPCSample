@@ -1,5 +1,5 @@
 Sample gRPC code being created from following Udemy course
-Will be used to add gRPC to bakery project later
+Will be used to add gRPC to bakery project later. No tests becasue this is my learning repo 
 
 ## SSL in Windows
 
