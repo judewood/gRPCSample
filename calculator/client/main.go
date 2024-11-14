@@ -8,14 +8,12 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
+	"github.com/judewood/gRPCSample/internal/consts"
 )
-
-var endpoint = "localhost:7777"
 
 func main() {
 	opts := []grpc.DialOption{}
-	tls := false //true to use SSL  - must match server setting
-	if tls {
+	if consts.UseSSL {
 		certFile := "ssl/ca.crt"
 		creds, err := credentials.NewClientTLSFromFile(certFile, "") //empty string because we are using localhost
 		if err != nil {
@@ -24,7 +22,7 @@ func main() {
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	}
 	// create a persistent connection to a server endpoint
-	conn, err := grpc.NewClient(endpoint, opts...)
+	conn, err := grpc.NewClient(consts.ClientUrl, opts...)
 	if err != nil {
 		log.Fatalf("failed to create connection. Error: %v", err)
 	}
