@@ -153,7 +153,7 @@ func (s *BlogServer) ListBlog(in *emptypb.Empty, stream grpc.ServerStreamingServ
 			fmt.Sprintf("Internal error when iterating ver mongoDb cursor: %v", err),
 		)
 		}
-		log.Printf("\nReturning next blog: %vn\", &data)
+		log.Printf("\nReturning next blog: %v\n", &data)
 		stream.Send(documentToBlog(&data))
 	}
 	if err = cursor.Err() ; err != nil {

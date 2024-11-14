@@ -5,29 +5,47 @@ import (
 	"net"
 
 	pb "github.com/judewood/gRPCSample/calculator/proto"
+	"github.com/judewood/gRPCSample/internal/consts"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/reflection"
 )
-
-var endpoint = "0.0.0.0:7777"
 
 type CalcServer struct {
 	pb.CalculatorServiceServer
 }
 
 func main() {
-	protocol := "tcp"
 	// tell the runtime what port to listen on and the transport protocol to use
-	listener, err := net.Listen(protocol, endpoint)
+	listener := getListener()
+
+	s := grpc.NewServer(getServerOptions()...)
+
+	// register s as  s as being the concrete implementation of
+	//CalculatorServiceServer defined in the generated grpc code
+	pb.RegisterCalculatorServiceServer(s, &CalcServer{})
+	//reflection.Register(s) uncomment when using evans cli
+
+	//start our server
+	if err := s.Serve(listener); err != nil {
+		log.Fatalf("failed to create calculator server.Error %v", err)
+	}
+}
+
+// getListener returns a listener that monitors calls to our url
+func getListener() net.Listener {
+	listener, err := net.Listen(consts.TCP, consts.ServerUrl)
 	if err != nil {
 		log.Fatalf("failed to create calculator listener")
 	}
-	log.Printf("Listening on %s with protocol %s", endpoint, protocol)
+	log.Printf("Listening on %s", consts.ServerUrl)
+	return listener
+}
 
+// getServerOptions gets the options to configure our http2 server with
+// currently only enables/disables SSL
+func getServerOptions() []grpc.ServerOption {
 	opts := []grpc.ServerOption{}
-	tls := false //true to use SSL  - must match client setting
-	if tls {
+	if consts.UseSSL {
 		certFile := "ssl/server.crt"
 		keyFile := "ssl/server.pem"
 		creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
@@ -36,15 +54,5 @@ func main() {
 		}
 		opts = append(opts, grpc.Creds(creds))
 	}
-	s := grpc.NewServer(opts...)
-
-	// register s as  s as being the concrete implementation of
-	//CalculatorServiceServer defined in the generated grpc code
-	pb.RegisterCalculatorServiceServer(s, &CalcServer{})
-	reflection.Register(s)
-
-	//start our server and listen
-	if err := s.Serve(listener); err != nil {
-		log.Fatalf("failed to create sum server.Error %v", err)
-	}
+	return opts
 }

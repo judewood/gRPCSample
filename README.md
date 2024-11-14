@@ -19,7 +19,7 @@ This will extract evans.exe to the same folder
 Add the extraction folder to your environment path
 run the exe. You should be prompted to use options with the command
 
-The certificate we are using is not signed so we need to set tls to false to play with evans.
+The certificate we are using is not signed so we need to set consts.UseSSL to false to play with evans.
 
 1. Start the server
 2. In another terminal window, run command `evans --host localhost --port 7777 -r repl`
