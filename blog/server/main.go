@@ -26,6 +26,12 @@ func main() {
 	dbClient := getMongoDbClient(ctx)
 	defer dbClient.Disconnect(ctx)
 
+	if consts.UseHttp1 {
+		server := SetupRouter()
+		log.Println("HTTP1 Server started")
+		server.Run(":4444")
+	}
+	
 	listener := getListener()
 	defer listener.Close()
 

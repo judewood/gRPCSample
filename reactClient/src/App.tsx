@@ -1,19 +1,18 @@
 import React from "react";
-import logo from "./logo.svg";
+
 import "./App.css";
 
 import { useState, useEffect } from "react";
 
-const URL = "http://worldtimeapi.org/api/timezone/Europe/London";
+const URL = "http://localhost:4444/ping"
 function App() {
-  let currentTime = "nowby";
   const [time, setTime] = useState("")
 
   useEffect(() => {
     const fetchTime = async () => {
       const result = await fetch(URL);
       result.json().then((json) => {
-        console.log();
+        console.log(json.datetime);
         setTime(json.datetime);
       });
     };
