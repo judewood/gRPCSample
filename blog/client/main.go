@@ -29,7 +29,8 @@ func main() {
 
 	// create an concrete client struct from the generated code
 	c := pb.NewBlogServiceClient(conn)
-	blogCrudOperations(c)
+	//blogCrudOperations(c)
+	GetTimeInitiate(c)
 }
 
 // blogCrudOperations exercises all our crud operations to simulate user activity

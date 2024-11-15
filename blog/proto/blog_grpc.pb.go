@@ -20,11 +20,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	BlogService_CreateBlog_FullMethodName = "/blog.BlogService/CreateBlog"
-	BlogService_GetBlog_FullMethodName    = "/blog.BlogService/GetBlog"
-	BlogService_UpdateBlog_FullMethodName = "/blog.BlogService/UpdateBlog"
-	BlogService_DeleteBlog_FullMethodName = "/blog.BlogService/DeleteBlog"
-	BlogService_ListBlog_FullMethodName   = "/blog.BlogService/ListBlog"
+	BlogService_CreateBlog_FullMethodName      = "/blog.BlogService/CreateBlog"
+	BlogService_GetBlog_FullMethodName         = "/blog.BlogService/GetBlog"
+	BlogService_UpdateBlog_FullMethodName      = "/blog.BlogService/UpdateBlog"
+	BlogService_DeleteBlog_FullMethodName      = "/blog.BlogService/DeleteBlog"
+	BlogService_ListBlog_FullMethodName        = "/blog.BlogService/ListBlog"
+	BlogService_SendCurrentTime_FullMethodName = "/blog.BlogService/SendCurrentTime"
 )
 
 // BlogServiceClient is the client API for BlogService service.
@@ -36,6 +37,7 @@ type BlogServiceClient interface {
 	UpdateBlog(ctx context.Context, in *Blog, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteBlog(ctx context.Context, in *BlogId, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListBlog(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Blog], error)
+	SendCurrentTime(ctx context.Context, in *InitiateCurrentTime, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CurrentTime], error)
 }
 
 type blogServiceClient struct {
@@ -105,6 +107,25 @@ func (c *blogServiceClient) ListBlog(ctx context.Context, in *emptypb.Empty, opt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type BlogService_ListBlogClient = grpc.ServerStreamingClient[Blog]
 
+func (c *blogServiceClient) SendCurrentTime(ctx context.Context, in *InitiateCurrentTime, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CurrentTime], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &BlogService_ServiceDesc.Streams[1], BlogService_SendCurrentTime_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[InitiateCurrentTime, CurrentTime]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type BlogService_SendCurrentTimeClient = grpc.ServerStreamingClient[CurrentTime]
+
 // BlogServiceServer is the server API for BlogService service.
 // All implementations must embed UnimplementedBlogServiceServer
 // for forward compatibility.
@@ -114,6 +135,7 @@ type BlogServiceServer interface {
 	UpdateBlog(context.Context, *Blog) (*emptypb.Empty, error)
 	DeleteBlog(context.Context, *BlogId) (*emptypb.Empty, error)
 	ListBlog(*emptypb.Empty, grpc.ServerStreamingServer[Blog]) error
+	SendCurrentTime(*InitiateCurrentTime, grpc.ServerStreamingServer[CurrentTime]) error
 	mustEmbedUnimplementedBlogServiceServer()
 }
 
@@ -138,6 +160,9 @@ func (UnimplementedBlogServiceServer) DeleteBlog(context.Context, *BlogId) (*emp
 }
 func (UnimplementedBlogServiceServer) ListBlog(*emptypb.Empty, grpc.ServerStreamingServer[Blog]) error {
 	return status.Errorf(codes.Unimplemented, "method ListBlog not implemented")
+}
+func (UnimplementedBlogServiceServer) SendCurrentTime(*InitiateCurrentTime, grpc.ServerStreamingServer[CurrentTime]) error {
+	return status.Errorf(codes.Unimplemented, "method SendCurrentTime not implemented")
 }
 func (UnimplementedBlogServiceServer) mustEmbedUnimplementedBlogServiceServer() {}
 func (UnimplementedBlogServiceServer) testEmbeddedByValue()                     {}
@@ -243,6 +268,17 @@ func _BlogService_ListBlog_Handler(srv interface{}, stream grpc.ServerStream) er
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type BlogService_ListBlogServer = grpc.ServerStreamingServer[Blog]
 
+func _BlogService_SendCurrentTime_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InitiateCurrentTime)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(BlogServiceServer).SendCurrentTime(m, &grpc.GenericServerStream[InitiateCurrentTime, CurrentTime]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type BlogService_SendCurrentTimeServer = grpc.ServerStreamingServer[CurrentTime]
+
 // BlogService_ServiceDesc is the grpc.ServiceDesc for BlogService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -271,6 +307,11 @@ var BlogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ListBlog",
 			Handler:       _BlogService_ListBlog_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SendCurrentTime",
+			Handler:       _BlogService_SendCurrentTime_Handler,
 			ServerStreams: true,
 		},
 	},
