@@ -67,3 +67,20 @@ func ListBlog(c pb.BlogServiceClient) {
 		log.Printf("Blog: %d :  %v", counter, msg)
 	}
 }
+
+func GetTimeInitiate(c pb.BlogServiceClient) {
+	stream, err:= c.SendCurrentTime(context.Background(), &pb.InitiateCurrentTime{Interval: 3} )
+	if err != nil {
+		log.Fatalf("failed to request current time. Error : %v", err)
+	}
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("failed to get current time from stream. Error %v", err)
+		}
+		log.Printf("Current time: %s", msg.CurrentTime)
+	}
+}

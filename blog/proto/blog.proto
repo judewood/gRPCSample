@@ -17,10 +17,19 @@ message BlogId {
     string id = 1;
 }
 
+message CurrentTime {
+    string currentTime = 1;
+}
+
+message InitiateCurrentTime {
+    int64 interval = 1;
+}
+
 service BlogService {
     rpc CreateBlog(Blog) returns (BlogId);
     rpc GetBlog(BlogId) returns (Blog);
     rpc UpdateBlog(Blog) returns (google.protobuf.Empty);
     rpc DeleteBlog(BlogId) returns (google.protobuf.Empty);
     rpc ListBlog(google.protobuf.Empty) returns (stream Blog);
+    rpc SendCurrentTime(InitiateCurrentTime) returns ( stream CurrentTime);
 }

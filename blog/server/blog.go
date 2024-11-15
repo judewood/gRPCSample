@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	pb "github.com/judewood/gRPCSample/blog/proto"
 	"go.mongodb.org/mongo-driver/bson"
@@ -163,4 +164,14 @@ func (s *BlogServer) ListBlog(in *emptypb.Empty, stream grpc.ServerStreamingServ
 		)
 	}
 	return nil
+}
+
+func (s *BlogServer) SendCurrentTime(in *pb.InitiateCurrentTime, stream grpc.ServerStreamingServer[pb.CurrentTime]) error{
+	interval := time.Duration(in.Interval)
+	for {
+		timeStr := time.Now().Format("2006-01-02 15:04:05")
+		log.Printf("timer sending %s\n", timeStr)
+		stream.Send(&pb.CurrentTime{CurrentTime: timeStr})
+		time.Sleep(interval * time.Second)
+	}
 }
