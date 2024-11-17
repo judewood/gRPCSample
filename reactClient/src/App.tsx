@@ -4,7 +4,7 @@ import "./App.css";
 
 import { useState, useEffect } from "react";
 
-const URL = "http://localhost:4444/ping"
+const URL = "https://localhost:4444/ping"
 function App() {
   const [time, setTime] = useState("")
 

@@ -26,12 +26,14 @@ func main() {
 	dbClient := getMongoDbClient(ctx)
 	defer dbClient.Disconnect(ctx)
 
-	if consts.UseHttp1 {
+	if consts.NoProtoBuf {
 		server := SetupRouter()
 		log.Println("HTTP1 Server started")
-		server.Run(":4444")
+		certFile := "ssl/server.crt"
+		keyFile := "ssl/server.pem"
+		server.RunTLS(":4444", certFile, keyFile)
 	}
-	
+
 	listener := getListener()
 	defer listener.Close()
 
