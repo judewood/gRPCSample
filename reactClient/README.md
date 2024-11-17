@@ -1,39 +1,63 @@
-# HTTP2 Protobuf example
+# React + TypeScript + Vite
 
-This is a simple react app that will make http2 requests to the server blog and enable blog results to uploaded from the server as a stream after react cleint makes initial request
-Currently the react app is simply requesting and displaying the current time that is requested using http1 from a public API. Next step is to get the current ime from the blog server using http2 and protobufs 
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+Currently, two official plugins are available:
 
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Available Scripts
+## Expanding the ESLint configuration
 
-In the reactClient directory, you can run:
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-### `npm start`
+- Configure the top-level `parserOptions` property like this:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```js
+export default tseslint.config({
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
+- Optionally add `...tseslint.configs.stylisticTypeChecked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-### `npm test`
+```js
+// eslint.config.js
+import react from 'eslint-plugin-react'
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default tseslint.config({
+  // Set the react version
+  settings: { react: { version: '18.3' } },
+  plugins: {
+    // Add the react plugin
+    react,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended rules
+    ...react.configs.recommended.rules,
+    ...react.configs['jsx-runtime'].rules,
+  },
+})
+```
 
-### `npm run build`
+## protobuf integration
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. Add protos folder under src folder
+2. Copy blog.proto file form server code
+3. pnpm install @protobuf-ts/plugin
+4. npx protoc --ts_out . --proto_path protos protos/msg-readme.proto
+5. pnpm install @protobuf-ts/runtime-rpc
+6. pnpm install @protobuf-ts/grpcweb-transport
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+##run UI code 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-## Http2
-
-`yarn spdy cors express`  ? = possilby server side
-
-
+`pnpm run dev`   
