@@ -32,4 +32,5 @@ service BlogService {
     rpc DeleteBlog(BlogId) returns (google.protobuf.Empty);
     rpc ListBlog(google.protobuf.Empty) returns (stream Blog);
     rpc SendCurrentTime(InitiateCurrentTime) returns ( stream CurrentTime);
+    rpc SendTimeOne(InitiateCurrentTime) returns (CurrentTime);
 }

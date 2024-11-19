@@ -54,9 +54,9 @@ export default tseslint.config({
 1. Add protos folder under src folder
 2. Copy blog.proto file form server code
 3. pnpm install @protobuf-ts/plugin
-4. npx protoc --ts_out . --proto_path protos protos/msg-readme.proto
 5. pnpm install @protobuf-ts/runtime-rpc
 6. pnpm install @protobuf-ts/grpcweb-transport
+7. npx protoc --ts_out . --proto_path protos protos/blog.proto
 
 ##run UI code 
 

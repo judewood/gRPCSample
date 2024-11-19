@@ -84,3 +84,13 @@ func GetTimeInitiate(c pb.BlogServiceClient) {
 		log.Printf("Current time: %s", msg.CurrentTime)
 	}
 }
+
+func GetOneTimeInitiate(c pb.BlogServiceClient, interval int32) {
+	resp, err := c.SendTimeOne(context.Background(), &pb.InitiateCurrentTime{
+		Interval: interval,
+	})
+	if err != nil {
+		log.Fatalf("failed to get one tome. Error: %v\n", err)
+	}
+	log.Printf("Got one time: %v\n", resp)
+}

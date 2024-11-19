@@ -26,6 +26,7 @@ const (
 	BlogService_DeleteBlog_FullMethodName      = "/blog.BlogService/DeleteBlog"
 	BlogService_ListBlog_FullMethodName        = "/blog.BlogService/ListBlog"
 	BlogService_SendCurrentTime_FullMethodName = "/blog.BlogService/SendCurrentTime"
+	BlogService_SendTimeOne_FullMethodName     = "/blog.BlogService/SendTimeOne"
 )
 
 // BlogServiceClient is the client API for BlogService service.
@@ -38,6 +39,7 @@ type BlogServiceClient interface {
 	DeleteBlog(ctx context.Context, in *BlogId, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListBlog(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Blog], error)
 	SendCurrentTime(ctx context.Context, in *InitiateCurrentTime, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CurrentTime], error)
+	SendTimeOne(ctx context.Context, in *InitiateCurrentTime, opts ...grpc.CallOption) (*CurrentTime, error)
 }
 
 type blogServiceClient struct {
@@ -126,6 +128,16 @@ func (c *blogServiceClient) SendCurrentTime(ctx context.Context, in *InitiateCur
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type BlogService_SendCurrentTimeClient = grpc.ServerStreamingClient[CurrentTime]
 
+func (c *blogServiceClient) SendTimeOne(ctx context.Context, in *InitiateCurrentTime, opts ...grpc.CallOption) (*CurrentTime, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CurrentTime)
+	err := c.cc.Invoke(ctx, BlogService_SendTimeOne_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlogServiceServer is the server API for BlogService service.
 // All implementations must embed UnimplementedBlogServiceServer
 // for forward compatibility.
@@ -136,6 +148,7 @@ type BlogServiceServer interface {
 	DeleteBlog(context.Context, *BlogId) (*emptypb.Empty, error)
 	ListBlog(*emptypb.Empty, grpc.ServerStreamingServer[Blog]) error
 	SendCurrentTime(*InitiateCurrentTime, grpc.ServerStreamingServer[CurrentTime]) error
+	SendTimeOne(context.Context, *InitiateCurrentTime) (*CurrentTime, error)
 	mustEmbedUnimplementedBlogServiceServer()
 }
 
@@ -163,6 +176,9 @@ func (UnimplementedBlogServiceServer) ListBlog(*emptypb.Empty, grpc.ServerStream
 }
 func (UnimplementedBlogServiceServer) SendCurrentTime(*InitiateCurrentTime, grpc.ServerStreamingServer[CurrentTime]) error {
 	return status.Errorf(codes.Unimplemented, "method SendCurrentTime not implemented")
+}
+func (UnimplementedBlogServiceServer) SendTimeOne(context.Context, *InitiateCurrentTime) (*CurrentTime, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendTimeOne not implemented")
 }
 func (UnimplementedBlogServiceServer) mustEmbedUnimplementedBlogServiceServer() {}
 func (UnimplementedBlogServiceServer) testEmbeddedByValue()                     {}
@@ -279,6 +295,24 @@ func _BlogService_SendCurrentTime_Handler(srv interface{}, stream grpc.ServerStr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type BlogService_SendCurrentTimeServer = grpc.ServerStreamingServer[CurrentTime]
 
+func _BlogService_SendTimeOne_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitiateCurrentTime)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServiceServer).SendTimeOne(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BlogService_SendTimeOne_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServiceServer).SendTimeOne(ctx, req.(*InitiateCurrentTime))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BlogService_ServiceDesc is the grpc.ServiceDesc for BlogService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -301,6 +335,10 @@ var BlogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteBlog",
 			Handler:    _BlogService_DeleteBlog_Handler,
+		},
+		{
+			MethodName: "SendTimeOne",
+			Handler:    _BlogService_SendTimeOne_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -7,6 +7,7 @@ import (
 	"github.com/judewood/gRPCSample/internal/consts"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -18,19 +19,33 @@ func main() {
 			log.Fatalf("failed to get client ssl credentials. Error %v", err)
 		}
 		opts = append(opts, grpc.WithTransportCredentials(creds))
-	}
-	// create a persistent connection to the server endpoint
-	conn, err := grpc.NewClient(consts.ClientUrl, opts...)
-	if err != nil {
-		log.Fatalf("failed to create connection. Error: %v", err)
-	}
-	//ensure the connection is closed before its enclosing function returns
-	defer conn.Close()
 
-	// create an concrete client struct from the generated code
-	c := pb.NewBlogServiceClient(conn)
-	//blogCrudOperations(c)
-	GetTimeInitiate(c)
+		// create a persistent connection to the server endpoint
+		conn, err := grpc.NewClient(consts.ClientUrl, opts...)
+		if err != nil {
+			log.Fatalf("failed to create connection. Error: %v", err)
+		}
+		defer conn.Close()
+
+		// create an concrete client struct from the generated code
+		c := pb.NewBlogServiceClient(conn)
+		//blogCrudOperations(c)
+		GetTimeInitiate(c)
+	} else { //non-SSL
+		conn, err := grpc.NewClient(consts.ClientUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("failed to create non-SSL connection. Error: %v", err)
+		}
+		//ensure the connection is closed before its enclosing function returns
+		defer conn.Close()
+
+		// create an concrete client struct from the generated code
+		c := pb.NewBlogServiceClient(conn)
+		//blogCrudOperations(c)
+		//GetTimeInitiate(c)
+		GetOneTimeInitiate(c, 1)
+	}
+
 }
 
 // blogCrudOperations exercises all our crud operations to simulate user activity
