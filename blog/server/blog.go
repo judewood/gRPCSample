@@ -175,3 +175,9 @@ func (s *BlogServer) SendCurrentTime(in *pb.InitiateCurrentTime, stream grpc.Ser
 		time.Sleep(interval * time.Second)
 	}
 }
+
+func (s *BlogServer) SendTimeOne(ctx context.Context, in *pb.InitiateCurrentTime) (*pb.CurrentTime, error){   
+		timeStr := time.Now().Format("2006-01-02 15:04:05")
+		log.Printf("one off timer sending %s\n", timeStr)
+		return &pb.CurrentTime{CurrentTime: timeStr}, nil
+}

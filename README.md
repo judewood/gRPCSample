@@ -29,3 +29,6 @@ if it is working
 4. Evans will show a pseudo prompt. Checkout the evans repo for available commands
 5. If it is a client stream input the ctrl+d will complete the request
 5. Ctrl+c will exit evans
+
+## Postman
+ Postman can be used to send grpc requests. See this [link](https://blog.postman.com/postman-now-supports-grpc/)

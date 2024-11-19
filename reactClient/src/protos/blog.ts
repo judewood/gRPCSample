@@ -281,5 +281,6 @@ export const BlogService = new ServiceType("blog.BlogService", [
     { name: "UpdateBlog", options: {}, I: Blog, O: Empty },
     { name: "DeleteBlog", options: {}, I: BlogId, O: Empty },
     { name: "ListBlog", serverStreaming: true, options: {}, I: Empty, O: Blog },
-    { name: "SendCurrentTime", serverStreaming: true, options: {}, I: InitiateCurrentTime, O: CurrentTime }
+    { name: "SendCurrentTime", serverStreaming: true, options: {}, I: InitiateCurrentTime, O: CurrentTime },
+    { name: "SendTimeOne", options: {}, I: InitiateCurrentTime, O: CurrentTime }
 ]);

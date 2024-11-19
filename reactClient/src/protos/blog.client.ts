@@ -7,7 +7,7 @@ import { BlogService } from "./blog";
 import type { CurrentTime } from "./blog";
 import type { InitiateCurrentTime } from "./blog";
 import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
-import type { Empty } from "./google/protobuf/empty";
+import type { Empty } from "../google/protobuf/empty";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { BlogId } from "./blog";
 import type { Blog } from "./blog";
@@ -41,6 +41,10 @@ export interface IBlogServiceClient {
      * @generated from protobuf rpc: SendCurrentTime(blog.InitiateCurrentTime) returns (stream blog.CurrentTime);
      */
     sendCurrentTime(input: InitiateCurrentTime, options?: RpcOptions): ServerStreamingCall<InitiateCurrentTime, CurrentTime>;
+    /**
+     * @generated from protobuf rpc: SendTimeOne(blog.InitiateCurrentTime) returns (blog.CurrentTime);
+     */
+    sendTimeOne(input: InitiateCurrentTime, options?: RpcOptions): UnaryCall<InitiateCurrentTime, CurrentTime>;
 }
 /**
  * @generated from protobuf service blog.BlogService
@@ -92,5 +96,12 @@ export class BlogServiceClient implements IBlogServiceClient, ServiceInfo {
     sendCurrentTime(input: InitiateCurrentTime, options?: RpcOptions): ServerStreamingCall<InitiateCurrentTime, CurrentTime> {
         const method = this.methods[5], opt = this._transport.mergeOptions(options);
         return stackIntercept<InitiateCurrentTime, CurrentTime>("serverStreaming", this._transport, method, opt, input);
+    }
+    /**
+     * @generated from protobuf rpc: SendTimeOne(blog.InitiateCurrentTime) returns (blog.CurrentTime);
+     */
+    sendTimeOne(input: InitiateCurrentTime, options?: RpcOptions): UnaryCall<InitiateCurrentTime, CurrentTime> {
+        const method = this.methods[6], opt = this._transport.mergeOptions(options);
+        return stackIntercept<InitiateCurrentTime, CurrentTime>("unary", this._transport, method, opt, input);
     }
 }
